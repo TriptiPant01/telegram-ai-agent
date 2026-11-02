@@ -1,0 +1,215 @@
+{
+  "name": "Send email with Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are an email assistant for ABC Company. Your job is to find a person’s email address in the Google Sheet and send them a professional email.\n\nSteps:\n\nWhen the user asks you to email someone, use the Google Sheets tool to search the sheet for that person (by name or company) and get their email address.\nIf you find exactly one match, use that email address. If you find more than one match, do not send anything. Ask the user which one they mean and list the matches.\nIf you find no match, do not guess or invent an email address. Tell the user that no email was found for that person and ask them to check the name.\nWrite the email in a professional, polite and clear tone. Keep it short, and write in English unless the user asks for another language.\nUse the Gmail tool to send the email with a clear subject line.\nAfter sending, reply to the user with a short confirmation: who the email was sent to (name and email address) and the subject line."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "7436b4e1-3a52-435d-a6c2-f2ad67459ccf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5",
+          "cachedResultName": "Claude Sonnet 5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        16,
+        224
+      ],
+      "id": "68fda6e7-79f4-4d9e-b644-3d271e3ded91",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "mZCWU1X6Gxabb6zm",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.update_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        240
+      ],
+      "id": "0faee2cf-7193-4dc3-a5b7-d96f4bb9cf49",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        224
+      ],
+      "id": "525bbed4-ea1d-44ca-87fd-e212222085e6",
+      "name": "Send a message in Gmail",
+      "webhookId": "9a76f6db-0e38-4a1e-9f09-2213ff1d28b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aurrcarSXJNgh6sj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mAUM0HzkeUtmj8RFwbrtAahthkIOVfkwG32B0L3NTQY",
+          "mode": "list",
+          "cachedResultName": "Customer Email",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mAUM0HzkeUtmj8RFwbrtAahthkIOVfkwG32B0L3NTQY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mAUM0HzkeUtmj8RFwbrtAahthkIOVfkwG32B0L3NTQY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        192
+      ],
+      "id": "63098845-97e2-4690-967c-7203da31ed43",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8PCyKCKjCCsJGMk5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        16
+      ],
+      "id": "95e2f661-c8ad-4253-a394-56f0c901a65b",
+      "name": "Telegram Trigger",
+      "webhookId": "1e222a86-68a0-479d-bd85-9982cbb247df",
+      "credentials": {
+        "telegramApi": {
+          "id": "KK0PkJ75WxGRa6Ow",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "c1353851-efec-4436-a996-89b2e9d9a350",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f5c8fc909b805b82489d5654039fc563b9d6bcd568932581cd19347edbe7e228"
+  },
+  "nodeGroups": [],
+  "id": "vNMVzvoqBX6memb5",
+  "tags": []
+}
